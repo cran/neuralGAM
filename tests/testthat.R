@@ -7,6 +7,7 @@
 # * https://testthat.r-lib.org/reference/test_package.html#special-files
 
 library(testthat)
-library(neuralGAM)
 
-test_check("neuralGAM")
+if (identical(Sys.getenv("NOT_CRAN"), "true"))
+  library(neuralGAM)
+  test_check("neuralGAM")

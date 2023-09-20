@@ -44,14 +44,13 @@
 #' @importFrom keras compile
 #' @importFrom tensorflow set_random_seed
 #' @importFrom stats predict lm
-#' @importFrom reticulate conda_list use_condaenv
 #' @importFrom magrittr %>%
 #' @importFrom formula.tools lhs rhs
 #' @export
 #' @references
 #' Hastie, T., & Tibshirani, R. (1990). Generalized Additive Models. London: Chapman and Hall, 1931(11), 683–741.
 #' @return A trained \code{neuralGAM} object. Use \code{summary(ngam)} to see details.
-#' @examples \donttest{
+#' @examples \dontrun{
 #' n <- 24500
 #'
 #' seed <- 42
@@ -173,7 +172,6 @@ neuralGAM <-
     if (!is.character(loss)) {
       stop("Error: 'loss' argument should be a character string.")
     }
-
 
     if (!is.null(seed)) {
       tensorflow::set_random_seed(seed)
@@ -397,34 +395,9 @@ neuralGAM <-
       )
     class(res) <- "neuralGAM"
     return(res)
-  }
+}
 
 .onAttach <- function(libname, pkgname) {
-  # set conda environment for tensorflow and keras
-  if (!.isConda()) {
-    .installConda()
-    installneuralGAMDeps()
-  }
-  packageStartupMessage("Setting up environment....")
-  envs <- reticulate::conda_list()
-  if (is.element("neuralGAM-env", envs$name)) {
-    packageStartupMessage("Loading conda environment...")
-    i <- which(envs$name == "neuralGAM-env")
-    Sys.setenv(TF_CPP_MIN_LOG_LEVEL = 2)
-    Sys.setenv(RETICULATE_PYTHON = envs$python[i])
-    tryCatch(
-      expr = reticulate::use_condaenv("neuralGAM-env", required = TRUE),
-      error = function(e)
-        NULL
-    )
-  }
-  else{
-    packageStartupMessage("Setting conda environment...")
-    installneuralGAMDeps()
-    envs <- reticulate::conda_list()
-    i <- which(envs$name == "neuralGAM-env")
-    Sys.setenv(TF_CPP_MIN_LOG_LEVEL = 2)
-    Sys.setenv(RETICULATE_PYTHON = envs$python[i])
-  }
-
+  Sys.unsetenv("RETICULATE_PYTHON")
+  .setupConda(.getConda())
 }
